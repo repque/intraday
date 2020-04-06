@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import datetime
 import six
 from   signals import Signal
 
@@ -26,15 +27,21 @@ def initial_breakout( period_length ):
     '''
     counter = 0
     max_price = 0
-
+    start_time = datetime.datetime( 2020, 4, 5, 9, 30 ) # date doesn't matter
     while True:
         point = (yield)
-        counter += 1
-        if counter <= period_length:
-            max_price = max( max_price, point.price )
+        if counter < period_length:
+            if point.time_stamp.time() <= ( start_time + datetime.timedelta( minutes=period_length ) ).time():
+                counter += 1
+                max_price = max( max_price, point.price )
         else:
             if point.price > max_price:
-                yield Signal( point=point, desc='break out' )
+                signal = Signal( point=point, desc='break out' )
+                # reset
+                counter = 0
+                max_price = 0
+
+                yield signal
             
 @coroutine
 def stop_loss( percent ):
@@ -48,7 +55,12 @@ def stop_loss( percent ):
             trigger_level = initial_price - initial_price * percent
         else:
             if point.price < trigger_level:
-                yield Signal( point=point, desc='loss exit: broke below {}'.format( trigger_level ) )
+                signal = Signal( point=point, desc='loss exit: broke below {}'.format( trigger_level ) )
+                # reset
+                trigger_level = 0
+                initial_price = 0
+
+                yield signal
             
 @coroutine
 def stop_profit( percent ):
@@ -62,6 +74,10 @@ def stop_profit( percent ):
             trigger_level = initial_price + initial_price * percent
         else:
             if point.price > trigger_level:
-                yield Signal( point=point, desc='profit exit: broke above {}'.format( trigger_level ) )
-      
+                signal = Signal( point=point, desc='profit exit: broke above {}'.format( trigger_level ) )
+                # reset
+                trigger_level = 0
+                initial_price = 0
+
+                yield signal      
                 
