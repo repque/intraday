@@ -18,7 +18,6 @@ def time_based( hour, minute ):
         point = (yield) 
         if point.time_stamp.hour == hour and point.time_stamp.minute == minute:
             yield Signal( point=point, desc='hour: {}, minute: {}'.format( hour, minute ) )
-            break
 
 @coroutine
 def initial_breakout( period_length ):
@@ -36,7 +35,6 @@ def initial_breakout( period_length ):
         else:
             if point.price > max_price:
                 yield Signal( point=point, desc='break out' )
-                break
             
 @coroutine
 def stop_loss( percent ):
@@ -51,7 +49,6 @@ def stop_loss( percent ):
         else:
             if point.price < trigger_level:
                 yield Signal( point=point, desc='loss exit: broke below {}'.format( trigger_level ) )
-                break
             
 @coroutine
 def stop_profit( percent ):
@@ -66,5 +63,5 @@ def stop_profit( percent ):
         else:
             if point.price > trigger_level:
                 yield Signal( point=point, desc='profit exit: broke above {}'.format( trigger_level ) )
-                break            
+      
                 

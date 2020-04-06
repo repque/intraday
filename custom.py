@@ -1,5 +1,6 @@
 from __future__ import print_function
 import datetime
+import logging
 
 def get_data_point( symbol ):
     ''' TODO: pull current data point here from your data provider for the symbol '''
@@ -12,4 +13,4 @@ def get_data_point( symbol ):
 
 def execute_signal( signal ):
     ''' TODO: submit signal for execution and record completion '''
-    print( 'Executing signal:', signal )
+    logging.debug( 'Executing signal: {}'.format( signal ) )
