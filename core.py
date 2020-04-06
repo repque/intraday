@@ -3,8 +3,8 @@ from   collections import namedtuple
 import datetime
 import time
 
-from coroutines import time_based
-from custom import get_data_point, execute_signal
+from   coroutines import time_based
+from   custom import get_data_point, execute_signal
 
 
 Point = namedtuple( 'Point', ['time_stamp', 'price'] )
@@ -31,7 +31,7 @@ class Strategy( object ):
             
             eod_exit = self.eod_exit.send( point )
             if eod_exit:
-                raise Exception('EOD')
+                return eod_exit
                 
             if self.in_position:
                 signal = self.config.run_exit_rules( point )

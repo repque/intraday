@@ -1,12 +1,13 @@
 from __future__ import print_function
 
-from signals import Signal
+import six
+from   signals import Signal
 
 def coroutine(func):
     ''' Decorator for coroutines to prime them '''
     def start(*args,**kwargs):
         cr = func(*args,**kwargs)
-        cr.next()
+        six.next( cr )
         return cr
     return start
 
