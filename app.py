@@ -9,7 +9,7 @@ from   backtest import gen_csv_data
 
 if __name__ == '__main__':
     # init logging
-    logging.config.fileConfig("logging.conf")
+    logging.config.fileConfig(".\\settings\\logging.conf")
 
     config1 = Config( symbol='IVV', equity_pct=0.10, 
                  entry_rules=[initial_breakout(45)], 
