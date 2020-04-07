@@ -5,26 +5,20 @@ import logging
 import time
 
 from   coroutines import time_based
-from   custom import get_data_point, execute_signal
-
 
 Point = namedtuple( 'Point', ['time_stamp', 'price'] )
 
-def gen_time_series( symbol=None ):
-    ''' generate time-series of prices '''
-    while True:
-        time_stamp, price = get_data_point( symbol )
-        yield Point( time_stamp=time_stamp, price=price )
 
 class Strategy( object ):
     
-    def __init__( self, config, dataProvider ):
+    def __init__( self, config, dataProvider, pnl ):
         self.time_series = dataProvider( config.symbol )
         self.config      = config
         self.in_position = False
         self.active      = True
         self.eod_exit    = time_based( 15, 59 ) # end-of-day exit hard-coded rule
-        
+        self.pnl         = pnl
+
     def tick( self ):
         ''' get the next data point and process it '''
         try:
@@ -51,6 +45,9 @@ class Strategy( object ):
                 self.in_position = signal.is_entry                
                 return signal 
             
+            # track mtm pnl in response to market data changes
+            self.pnl.market_data_update( self.config.symbol, point )
+
         except StopIteration:
             self.active = False
             logging.debug('{} finished.'.format ( self.config.symbol ) )
@@ -59,32 +56,6 @@ class Strategy( object ):
             # if any exception has occured, the strategy is inactivated
             self.active = False
             logging.error( '{} setting active to False.'.format ( self.config.symbol ) )
-
-
-            
-
-def run( configs, interval=1, dataProvider=gen_time_series ):
-    ''' main event loop 
-
-        interval is in minutes, it defines how long to wait before requesting next data point, for testing set it to 0
-        dataProvider is a generator function which generates data points for the symbol
-
-    '''
-
-    strategies = [ Strategy(config, dataProvider) for config in configs ]
-    
-    while True:
-        active_strategies = [ strategy for strategy in strategies if strategy.active ]
-        if not active_strategies:
-            logging.debug( 'All Done!' )
-            break # we're done
-        
-        for strategy in active_strategies:
-            signal = strategy.tick()
-            if signal:
-                execute_signal( signal )
-                
-        time.sleep( interval * 60 )
 
 
 class Config( object ):
@@ -112,3 +83,16 @@ class Config( object ):
                 result.equity_pct = self.equity_pct
                 return result
 
+class Trade( object ):
+    
+    def __init__( self, signal, qty, price ):
+        self.symbol     = signal.symbol
+        self.qty        = qty
+        self.price      = price
+        self.is_entry   = signal.is_entry
+        
+    def __repr__(self):
+        return "<{klass} {attrs}>".format(
+            klass=self.__class__.__name__,
+            attrs=" ".join("{}={!r}".format(k, v) for k, v in self.__dict__.items()),
+            )
