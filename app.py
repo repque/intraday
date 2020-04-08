@@ -4,9 +4,8 @@ import logging
 import logging.config
 import time
 
-from   core import Config, Strategy
+from   core import Config, Strategy, execute_signal
 from   coroutines import initial_breakout, time_based, stop_loss, stop_profit
-from   custom import execute_signal
 from   data_providers import gen_csv_data, gen_time_series
 from   positions import Pnl
 

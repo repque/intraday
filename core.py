@@ -5,6 +5,8 @@ import logging
 import time
 
 from   coroutines import time_based
+from   custom import submit_order
+from   positions import Pnl
 
 Point = namedtuple( 'Point', ['time_stamp', 'price'] )
 
@@ -96,3 +98,25 @@ class Trade( object ):
             klass=self.__class__.__name__,
             attrs=" ".join("{}={!r}".format(k, v) for k, v in self.__dict__.items()),
             )
+
+def execute_signal( signal ):
+    ''' submit signal for execution and record completion '''
+
+    pnl = Pnl()
+    if signal.is_entry:
+        needed_cash = pnl.starting_equity * signal.equity_pct
+        if needed_cash > pnl.available_cash:
+            logging.warn( 'Not enough cash to open position for {}: need: {}, have:{}. Skipping signal ...', signal.symbol, needed_cash, pnl.available_cash )
+            return None
+
+        qty = needed_cash // signal.point.price
+        qty = qty - qty % 10
+    else:
+        position = pnl.positions[ signal.symbol ]
+        qty = position.qty
+        
+    logging.debug( 'Executing signal: {}'.format( signal ) )
+
+    fill_price = submit_order( signal.symbol, qty, signal.is_entry )
+
+    return Trade( signal, qty, fill_price or signal.point.price )
