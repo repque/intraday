@@ -15,7 +15,7 @@ class Position( object ):
         self.realized_pl = 0.0
 
         self.qty = 0
-        self.trade = None
+        self.starting_equity = 0
 
     def handle_fill( self, trade ):
         self.total_commissions += trade.qty * self.commission
