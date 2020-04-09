@@ -1,11 +1,12 @@
+
 class Signal( object ):
     
-    def __init__( self, point=None, desc=None ):
+    def __init__( self, point, desc, is_entry=True, equity_pct=0, symbol=None ):
+        self.symbol     = symbol
         self.point      = point
         self.desc       = desc
-        self.equity_pct = 0
-        self.is_entry   = False
-        self.symbol     = None
+        self.is_entry   = is_entry
+        self.equity_pct = equity_pct
         
     def __repr__(self):
         return "<{klass} {attrs}>".format(
