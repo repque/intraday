@@ -14,6 +14,7 @@ class Position( object ):
         self.total_commissions = 0.0
         self.realized_pl = 0.0
 
+        self.mtm_pl = 0.0
         self.qty = 0
         self.starting_equity = 0
 
@@ -68,4 +69,4 @@ class Pnl( Singleton ):
         return sum( position.realized_pl + position.mtm_pl for position in self.positions.values() )
 
     def get_commissions( self ):
-        return sum( position.total_commissions for position in self.positions.values() )
+        return int(sum( position.total_commissions for position in self.positions.values() ))
