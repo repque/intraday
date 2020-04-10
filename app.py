@@ -3,6 +3,7 @@ from __future__ import print_function
 import logging
 import logging.config
 import time
+import session as s
 
 from   core import Config, Strategy, execute_signal
 from   coroutines import initial_breakout, time_based, stop_loss, stop_profit
@@ -16,6 +17,8 @@ def run( configs, interval=1, dataProvider=gen_time_series, cash=25000, commissi
         dataProvider is a generator function which generates data points for the symbol
 
     '''
+    session = s.Session()
+    session.login()
     pnl = Pnl()
     pnl.initialize( configs, cash, commission )
 
@@ -50,4 +53,4 @@ if __name__ == '__main__':
 
     configs = [config1]
 
-    run( configs, interval=0, dataProvider=gen_csv_data )
+    run( configs, interval=0, dataProvider=gen_time_series )

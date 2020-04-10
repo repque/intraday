@@ -114,9 +114,9 @@ def execute_signal( signal ):
     else:
         position = pnl.positions[ signal.symbol ]
         qty = position.qty
-        
+    
     logging.debug( 'Executing signal: {}'.format( signal ) )
-
+    
     fill_price = submit_order( signal.symbol, qty, signal.is_entry )
 
     return Trade( signal, qty, fill_price or signal.point.price )
