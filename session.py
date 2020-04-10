@@ -1,15 +1,15 @@
-from td.client import TDClient
-import settings.appconfig as set
-from utils import Singleton
+from   td.client import TDClient
+import settings.appconfig as config
+from   utils import Singleton
 
 class Session ( Singleton ):
     
-    session = TDClient()
+    session = None
 
     def login( self ):
         ''' login to TD account '''
-        TDSession = TDClient(account_number = set.td['account_number'],
+        TDSession = TDClient(account_number   = config.td['account_number'],
                              account_password = '',
-                             consumer_id = set.td['consumer_id'],
-                             redirect_uri = set.td['redirect_uri'])
+                             consumer_id      = config.td['consumer_id'],
+                             redirect_uri     = config.td['redirect_uri'])
         session = TDSession.login()        
