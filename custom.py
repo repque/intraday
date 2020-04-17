@@ -2,6 +2,7 @@ from __future__ import print_function
 import datetime
 import logging
 
+
 def get_data_point( symbol ):
     ''' TODO: pull current data point here from your data provider for the symbol '''
     
@@ -11,6 +12,9 @@ def get_data_point( symbol ):
     
     return time_stamp, price
 
-def execute_signal( signal ):
-    ''' TODO: submit signal for execution and record completion '''
-    logging.debug( 'Executing signal: {}'.format( signal ) )
+def submit_order( symbol, qty, is_entry ):
+    ''' TODO: submit order to the broker API for execution, and return fill price 
+        If 'is_entry' is True - Buy to Open, else - Sell to Close
+    '''
+    return 0
+

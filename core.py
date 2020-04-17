@@ -5,33 +5,42 @@ import logging
 import time
 
 from   coroutines import time_based
-from   custom import get_data_point, execute_signal
-
+from   custom import submit_order
+from   positions import Pnl
 
 Point = namedtuple( 'Point', ['time_stamp', 'price'] )
 
-def gen_time_series( symbol=None ):
-    ''' generate time-series of prices '''
-    while True:
-        time_stamp, price = get_data_point( symbol )
-        yield Point( time_stamp=time_stamp, price=price )
 
 class Strategy( object ):
     
-    def __init__( self, config, dataProvider ):
+    def __init__( self, config, dataProvider, pnl ):
         self.time_series = dataProvider( config.symbol )
         self.config      = config
         self.in_position = False
         self.active      = True
         self.eod_exit    = time_based( 15, 59 ) # end-of-day exit hard-coded rule
-        
+        self.pnl         = pnl
+
+        # these could come from config eventually
+        start_hour = 9
+        start_minute = 30
+
+        end_hour = 16
+        end_minute = 0
+
+        # convert to minutes
+        self.start_time = int(start_hour)*60 + int(start_minute)
+        self.end_time   = int(end_hour)*60   + int(end_minute)
+
     def tick( self ):
         ''' get the next data point and process it '''
         try:
             point = next( self.time_series )
             
-            # skip after-market data
-            if point.time_stamp.hour > 15:
+            # skip pre-market and after-market data
+            current_time =  point.time_stamp.hour*60 + point.time_stamp.minute
+
+            if  current_time < self.start_time or current_time >= self.end_time:
                 return None
 
             # default exit at eod, if still in position
@@ -51,6 +60,9 @@ class Strategy( object ):
                 self.in_position = signal.is_entry                
                 return signal 
             
+            # track mtm pnl in response to market data changes
+            self.pnl.market_data_update( self.config.symbol, point )
+
         except StopIteration:
             self.active = False
             logging.debug('{} finished.'.format ( self.config.symbol ) )
@@ -59,32 +71,6 @@ class Strategy( object ):
             # if any exception has occured, the strategy is inactivated
             self.active = False
             logging.error( '{} setting active to False.'.format ( self.config.symbol ) )
-
-
-            
-
-def run( configs, interval=1, dataProvider=gen_time_series ):
-    ''' main event loop 
-
-        interval is in minutes, it defines how long to wait before requesting next data point, for testing set it to 0
-        dataProvider is a generator function which generates data points for the symbol
-
-    '''
-
-    strategies = [ Strategy(config, dataProvider) for config in configs ]
-    
-    while True:
-        active_strategies = [ strategy for strategy in strategies if strategy.active ]
-        if not active_strategies:
-            logging.debug( 'All Done!' )
-            break # we're done
-        
-        for strategy in active_strategies:
-            signal = strategy.tick()
-            if signal:
-                execute_signal( signal )
-                
-        time.sleep( interval * 60 )
 
 
 class Config( object ):
@@ -112,3 +98,38 @@ class Config( object ):
                 result.equity_pct = self.equity_pct
                 return result
 
+class Trade( object ):
+    
+    def __init__( self, signal, qty, price ):
+        self.symbol     = signal.symbol
+        self.qty        = qty
+        self.price      = price
+        self.is_entry   = signal.is_entry
+        
+    def __repr__(self):
+        return "<{klass} {attrs}>".format(
+            klass=self.__class__.__name__,
+            attrs=" ".join("{}={!r}".format(k, v) for k, v in self.__dict__.items()),
+            )
+
+def execute_signal( signal ):
+    ''' submit signal for execution and record completion '''
+
+    pnl = Pnl()
+    if signal.is_entry:
+        needed_cash = pnl.starting_equity * signal.equity_pct
+        if needed_cash > pnl.available_cash:
+            logging.warn( 'Not enough cash to open position for {}: need: {}, have:{}. Skipping signal ...', signal.symbol, needed_cash, pnl.available_cash )
+            return None
+
+        qty = needed_cash // signal.point.price
+        qty = qty - qty % 10
+    else:
+        position = pnl.positions[ signal.symbol ]
+        qty = position.qty
+        
+    logging.debug( 'Executing signal: {}'.format( signal ) )
+
+    fill_price = submit_order( signal.symbol, qty, signal.is_entry )
+
+    return Trade( signal, qty, fill_price or signal.point.price )
