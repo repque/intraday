@@ -1,33 +1,43 @@
 from __future__ import print_function
 import datetime
 import logging
-import settings.appconfig as set
+import settings.appconfig as config
 import session as s
+import time
 from td.orders import Order, OrderLeg
 from td.enums import ORDER_SESSION, DURATION, ORDER_INSTRUCTIONS, ORDER_ASSET_TYPE, ORDER_STRATEGY_TYPE, ORDER_TYPE, QUANTITY_TYPE
-import json
 
 
 def get_data_point( symbol ):
-    
     ''' Pull current data point here from data provider for the symbol '''    
-    session = s.Session().session    
-    # get real data here
-    price = session.get_quotes(instruments=symbol)[symbol]['lastPrice']
-    time_stamp = datetime.datetime.now()
-    logging.debug( 'Get Quote from API: {},{}'.format( price, time_stamp ) )
+    for i in range(0,5):
+        while True:            
+            try:
+                session_object = s.Session()
+                session = session_object.session
+                # get real data here
+                price = session.get_quotes(instruments=symbol)[symbol]['lastPrice']
+                time_stamp = datetime.datetime.now()
+                logging.debug( 'Get Quote from API for {}: {},{}'.format( symbol, str(price), str(time_stamp) ) )
         
-    return time_stamp, price
+                return time_stamp, price
+            except Exception as ex:                
+                logging.error( 'Exception: {}'.format ( str(ex) ) )                              
+                time.sleep(1)
+                session_object.login()
+                session = session_object.session
+                continue
+            break
 
 def submit_order( symbol, qty, is_entry ):
     
     ''' Place order through TD API '''
     session = s.Session().session
-    account_id = set.td['account_id']
+    account_id = config.td['account_id']
     fill_price = 0
     
     logging.debug( 'Executing signal: {},{},{}'.format( symbol, qty, is_entry ) )
-    send_order = set.td['live_orders']
+    send_order = config.td['live_orders']
     instruction = 'buy' if is_entry else 'sell'
 
     new_order = Order()
@@ -49,6 +59,8 @@ def submit_order( symbol, qty, is_entry ):
     if (send_order):
         session.place_order(account = account_id, order= new_order)
         fill_price, time_stamp = get_filled_price(account_id,symbol)    
+    else:
+        print('Instruction = {}, Symbol = {}'.format(instruction, symbol))
 
     return fill_price
 

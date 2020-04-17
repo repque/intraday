@@ -57,7 +57,7 @@ class Strategy( object ):
         except Exception as ex:
             # if any exception has occured, the strategy is inactivated
             self.active = False
-            logging.error( '{} setting active to False.'.format ( self.config.symbol ) )
+            logging.error( '{} setting active to False. Exception: {}'.format ( self.config.symbol, str(ex) ) )
 
 
 class Config( object ):

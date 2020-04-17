@@ -10,7 +10,7 @@ from   coroutines import initial_breakout, time_based, stop_loss, stop_profit
 from   data_providers import gen_csv_data, gen_time_series
 from   positions import Pnl
 
-def run( configs, interval=1, dataProvider=gen_time_series, cash=25000, commission=0.01 ):
+def run( configs, interval=1, dataProvider=gen_time_series, cash=9000, commission=0.00 ):
     ''' main event loop 
 
         interval is in minutes, it defines how long to wait before requesting next data point, for testing set it to 0
@@ -45,12 +45,18 @@ if __name__ == '__main__':
     # init logging
     logging.config.fileConfig(".\\settings\\logging.conf")
 
-    config1 = Config( symbol='IVV', equity_pct=0.50, 
-                 entry_rules=[initial_breakout(45)], 
+    config1 = Config( symbol='FAS', equity_pct=0.50, 
+                 entry_rules=[initial_breakout(5)], 
                  exit_rules =[time_based(14,15), 
                               stop_loss(0.02), 
-                              stop_profit(0.02)] )
+                              stop_profit(0.05)] )
 
-    configs = [config1]
+    config2 = Config( symbol='FAZ', equity_pct=0.50, 
+                 entry_rules=[initial_breakout(5)], 
+                 exit_rules =[time_based(14,15), 
+                              stop_loss(0.02), 
+                              stop_profit(0.05)] )
 
-    run( configs, interval=0, dataProvider=gen_time_series )
+    configs = [config1,config2]
+
+    run( configs, interval=1, dataProvider=gen_time_series )

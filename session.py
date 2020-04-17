@@ -4,7 +4,7 @@ from   utils import Singleton
 
 class Session ( Singleton ):
     
-    session = None
+    session = TDClient()
 
     def login( self ):
         ''' login to TD account '''
@@ -12,4 +12,5 @@ class Session ( Singleton ):
                              account_password = '',
                              consumer_id      = config.td['consumer_id'],
                              redirect_uri     = config.td['redirect_uri'])
-        session = TDSession.login()        
+        TDSession.login()        
+        self.session = TDSession
