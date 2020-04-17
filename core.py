@@ -21,13 +21,26 @@ class Strategy( object ):
         self.eod_exit    = time_based( 15, 59 ) # end-of-day exit hard-coded rule
         self.pnl         = pnl
 
+        # these could come from config eventually
+        start_hour = 9
+        start_minute = 30
+
+        end_hour = 16
+        end_minute = 0
+
+        # convert to minutes
+        self.start_time = int(start_hour)*60 + int(start_minute)
+        self.end_time   = int(end_hour)*60   + int(end_minute)
+
     def tick( self ):
         ''' get the next data point and process it '''
         try:
             point = next( self.time_series )
             
-            # skip after-market data
-            if point.time_stamp.hour > 15:
+            # skip pre-market and after-market data
+            current_time =  point.time_stamp.hour*60 + point.time_stamp.minute
+
+            if  current_time < self.start_time or current_time >= self.end_time:
                 return None
 
             # default exit at eod, if still in position
