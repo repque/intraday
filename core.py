@@ -7,19 +7,21 @@ import time
 from   coroutines import time_based
 from   custom import submit_order
 from   positions import Pnl
+import utils 
 
 Point = namedtuple( 'Point', ['time_stamp', 'price'] )
 
 
 class Strategy( object ):
     
-    def __init__( self, config, dataProvider, pnl ):
+    def __init__( self, config, dataProvider, pnl, live=False ):
         self.time_series = dataProvider( config.symbol )
         self.config      = config
         self.in_position = False
         self.active      = True
         self.eod_exit    = time_based( 15, 59 ) # end-of-day exit hard-coded rule
         self.pnl         = pnl
+        self.live        = live # are we running in Live mode or in Test mode?
 
         # these could come from config eventually
         start_hour = 9
@@ -36,6 +38,9 @@ class Strategy( object ):
         ''' get the next data point and process it '''
         try:
             point = next( self.time_series )
+
+            if self.live:
+                utils.save_point( self.config.symbol, point )
             
             # skip pre-market and after-market data
             current_time =  point.time_stamp.hour*60 + point.time_stamp.minute
