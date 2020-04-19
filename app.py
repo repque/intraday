@@ -5,7 +5,7 @@ from   functools import partial
 import logging
 import logging.config
 import time
-import session as s
+from   session import Session
 
 from   core import Config, Strategy, execute_signal
 from   coroutines import initial_breakout, time_based, stop_loss, stop_profit
@@ -23,12 +23,11 @@ def run( configs, live=False, specific_day=None, cash=25000, commission=0.00 ):
         gen_test_data = partial( gen_csv_data, specific_day=specific_day ) # pass the specific_day argument to the coroutine
         dataProvider=gen_test_data
     else:
-        interval=1, # in live mode, how many minutes to sleep between requesting next data point
+        interval=1 # in live mode, how many minutes to sleep between requesting next data point
         dataProvider=gen_time_series
 
-    '''
-    session = s.Session()
-    session.login()
+    session_object = Session()
+    session_object.login()
     pnl = Pnl()
     pnl.initialize( configs, cash, commission )
 
@@ -71,4 +70,4 @@ if __name__ == '__main__':
 
     # to replay specific day, set the argument to datetime instance:
     # for example: specific_day = datetime.datetime( 2020, 4, 2 )
-    run( configs, live = False, specific_day = None )
+    run( configs, live = True, specific_day = None )
