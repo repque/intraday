@@ -5,7 +5,7 @@ import settings.appconfig as config
 from   session import Session
 import time
 from td.orders import Order, OrderLeg
-from td.enums import ORDER_SESSION, DURATION, ORDER_INSTRUCTIONS, ORDER_ASSET_TYPE, ORDER_STRATEGY_TYPE, ORDER_TYPE, QUANTITY_TYPE
+import td.enums
 
 
 def get_data_point( symbol ):
@@ -40,7 +40,6 @@ def submit_order( symbol, qty, is_entry ):
     send_order = config.td['live_orders']
     instruction = 'buy' if is_entry else 'sell'
     logging.debug( 'Executing signal: {} {} {}'.format( instruction, qty, symbol ) )
-    send_order = config.td['live_orders']
 
     new_order = Order()
     new_order.order_type(order_type = td.enums.ORDER_TYPE.MARKET)
@@ -60,7 +59,7 @@ def submit_order( symbol, qty, is_entry ):
     new_order.add_order_leg(order_leg = new_order_leg)
     if (send_order):
         session.place_order(account = account_id, order= new_order)
-        fill_price, time_stamp = get_filled_price(account_id,symbol)    
+        fill_price = get_filled_price(account_id,symbol)    
     else:
         print('Instruction = {}, Symbol = {}'.format(instruction, symbol))
 

@@ -46,16 +46,16 @@ if __name__ == '__main__':
     logging.config.fileConfig(".\\settings\\logging.conf")
 
     config1 = Config( symbol='FAS', equity_pct=0.50, 
-                 entry_rules=[initial_breakout(5)], 
+                 entry_rules=[initial_breakout(1)], 
                  exit_rules =[time_based(14,15), 
                               stop_loss(0.02), 
-                              stop_profit(0.05)] )
+                              stop_profit(0.04)] )
 
     config2 = Config( symbol='FAZ', equity_pct=0.50, 
-                 entry_rules=[initial_breakout(5)], 
+                 entry_rules=[initial_breakout(1)], 
                  exit_rules =[time_based(14,15), 
                               stop_loss(0.02), 
-                              stop_profit(0.05)] )
+                              stop_profit(0.04)] )
 
     configs = [config1,config2]
 

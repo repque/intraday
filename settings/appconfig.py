@@ -10,10 +10,10 @@ email = {
     'to': '9736502582@tmomail.net'    
 }
 td = {
-    'account_number': '72606421',
-    'account_id': '427025201',
-    'consumer_id': 'TWPEKEDOFKUDQKJWEQTQL9LN3YKBX48G',
-    'redirect_uri': 'http://localhost/TestApp/',
+    'account_number': 'stashuk78',
+    'account_id': '454649732',
+    'consumer_id': 'GG5KH9GJ8TK4X9QC8M3OCP2OBF33FDDH',
+    'redirect_uri': 'http://localhost/TestApp2/',
     'capital': '10000',
-    'live_orders' : False
+    'live_orders' : True
 }
