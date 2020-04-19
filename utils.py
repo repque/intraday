@@ -1,4 +1,5 @@
 import collections
+import csv
 import functools
 
 class memoized(object):
@@ -37,3 +38,9 @@ class Singleton( object ):
         return it
     def init(self, *args, **kwds):
         pass
+
+@memoized
+def save_point( symbol, point ):
+    with open( '.\\data\\' + symbol + '.csv', 'a', newline='') as f:
+        writer = csv.writer( f )
+        writer.writerow( point )

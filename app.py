@@ -1,5 +1,7 @@
 from __future__ import print_function
 
+import datetime
+from   functools import partial
 import logging
 import logging.config
 import time
@@ -10,11 +12,19 @@ from   coroutines import initial_breakout, time_based, stop_loss, stop_profit
 from   data_providers import gen_csv_data, gen_time_series
 from   positions import Pnl
 
-def run( configs, interval=1, dataProvider=gen_time_series, cash=9000, commission=0.00 ):
+def run( configs, live=False, specific_day=None, cash=25000, commission=0.00 ):
     ''' main event loop 
 
-        interval is in minutes, it defines how long to wait before requesting next data point, for testing set it to 0
-        dataProvider is a generator function which generates data points for the symbol
+        if 'live' mode is False, we're testing and running against previously recorded data.
+        The 'specific_day' argument allows to run against a specific pre-recorded day. By default, all data is replayed
+    '''
+    if not live:
+        interval=0  # in test mode, no need to sleep, just run
+        gen_test_data = partial( gen_csv_data, specific_day=specific_day ) # pass the specific_day argument to the coroutine
+        dataProvider=gen_test_data
+    else:
+        interval=1, # in live mode, how many minutes to sleep between requesting next data point
+        dataProvider=gen_time_series
 
     '''
     session = s.Session()
@@ -22,7 +32,7 @@ def run( configs, interval=1, dataProvider=gen_time_series, cash=9000, commissio
     pnl = Pnl()
     pnl.initialize( configs, cash, commission )
 
-    strategies = [ Strategy( config, dataProvider, pnl ) for config in configs ]
+    strategies = [ Strategy( config, dataProvider, pnl, live=live ) for config in configs ]
 
     while True:
         active_strategies = [ strategy for strategy in strategies if strategy.active ]
@@ -59,4 +69,6 @@ if __name__ == '__main__':
 
     configs = [config1,config2]
 
-    run( configs, interval=1, dataProvider=gen_time_series )
+    # to replay specific day, set the argument to datetime instance:
+    # for example: specific_day = datetime.datetime( 2020, 4, 2 )
+    run( configs, live = False, specific_day = None )
