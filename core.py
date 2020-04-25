@@ -18,8 +18,7 @@ class Strategy( object ):
         self.time_series = dataProvider( config.symbol )
         self.config      = config
         self.in_position = False
-        self.active      = True
-        self.eod_exit    = time_based( 15, 59 ) # end-of-day exit hard-coded rule
+        self.active      = True        
         self.pnl         = pnl
         self.live        = live # are we running in Live mode or in Test mode?
 
@@ -47,13 +46,7 @@ class Strategy( object ):
 
             if  current_time < self.start_time or current_time >= self.end_time:
                 return None
-
-            # default exit at eod, if still in position
-            eod_exit = self.eod_exit.send( point )
-            if eod_exit and self.in_position:
-                self.in_position = False
-                return eod_exit
-            
+          
             # apply entry/exit rules
             if self.in_position:
                 signal = self.config.run_exit_rules( point )
@@ -84,6 +77,7 @@ class Config( object ):
         self.equity_pct  = equity_pct
         self.entry_rules = entry_rules
         self.exit_rules  = exit_rules
+        self.exit_rules.append( time_based( 15, 59 ) ) # end-of-day exit hard-coded rule 
         self.symbol      = symbol
         
     def run_exit_rules( self, point ):

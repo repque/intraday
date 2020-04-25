@@ -28,20 +28,30 @@ def initial_breakout( period_length ):
     counter = 0
     max_price = 0
     start_time = datetime.datetime( 2020, 4, 5, 9, 30 ) # date doesn't matter
+
+    last_date = datetime.datetime( 2020, 1, 1 ).date()
+    allowed = False
+
     while True:
         point = (yield)
+
+        if last_date < point.time_stamp.date():
+            last_date = point.time_stamp.date()
+            allowed = True # reset once per day
+
         if counter < period_length:
-                if point.time_stamp.time() > start_time.time():
-                    counter += 1
-                    max_price = max( max_price, point.price )
+            if point.time_stamp.time() >= start_time.time() and allowed:
+                counter += 1
+                max_price = max( max_price, point.price )
         else:
             if point.price > max_price:
                 signal = Signal( point=point, desc='break out' )
+                yield signal
+
                 # reset
                 counter = 0
                 max_price = 0
-
-                yield signal
+                allowed = False
             
 @coroutine
 def stop_loss( percent ):

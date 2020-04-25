@@ -2,7 +2,7 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 # Visual Studio ache/options directory
-.vs/
+
 
 # Visual Studio auto generated files
 Generated\ Files/
@@ -139,3 +139,5 @@ cython_debug/
 /.vs/VSWorkspaceState.json
 /.vs/intraday/v16/TestStore/0/testlog.manifest
 /.vs/intraday/v16/TestStore/0/000.testlog
+/.vs/slnx.sqlite
+/.vs/tasks.vs.json

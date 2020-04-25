@@ -66,7 +66,7 @@ if __name__ == '__main__':
                               stop_loss(0.02), 
                               stop_profit(0.04)] )
 
-    configs = [config1,config2]
+    configs = [config1, config2]
 
     # to replay specific day, set the argument to datetime instance:
     # for example: specific_day = datetime.datetime( 2020, 4, 2 )

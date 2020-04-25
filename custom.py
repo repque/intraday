@@ -4,17 +4,21 @@ import logging
 import settings.appconfig as config
 from   session import Session
 import time
-from td.orders import Order, OrderLeg
+from   td.orders import Order, OrderLeg
 import td.enums
 
+def get_session( force_login = False ):
+    s = Session()
+    if s.session is None or force_login:
+        s.login()
+        return s.session
 
 def get_data_point( symbol ):
     ''' Pull current data point here from data provider for the symbol '''    
     for i in range(0,5):
         while True:            
             try:
-                session_object = Session()
-                session = session_object.session
+                session = get_session()
                 # get real data here
                 price = session.get_quotes(instruments=symbol)[symbol]['lastPrice']
                 time_stamp = datetime.datetime.now()
@@ -24,15 +28,14 @@ def get_data_point( symbol ):
             except Exception as ex:                
                 logging.error( 'Exception: {}'.format ( str(ex) ) )                              
                 time.sleep(1)
-                session_object.login()
-                session = session_object.session
+                session = get_session( force_login = True )
                 continue
             break
 
 def submit_order( symbol, qty, is_entry ):
     ''' Place order through TD API '''
     
-    session = Session().session
+    session = get_session()
     account_id = config.td['account_id']
     fill_price = 0
     
@@ -67,7 +70,7 @@ def submit_order( symbol, qty, is_entry ):
 
 def get_filled_price (account, symbol):
     ''' Find latest filled order for symbol '''
-    session = Session().session
+    session = get_session()
     time.sleep(2)
     today = datetime.date.today()
     # Get all today's fulfilled orders
