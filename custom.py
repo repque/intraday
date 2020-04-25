@@ -71,7 +71,7 @@ def get_filled_price (account, symbol):
     time.sleep(2)
     today = datetime.date.today()
     # Get all today's fulfilled orders
-    orders = session.get_orders_query(account = account_id, from_entered_time = today, to_entered_time = today, status = 'FILLED')
+    orders = session.get_orders_query(account = account, from_entered_time = today, to_entered_time = today, status = 'FILLED')
     # Get last filled order for symbol
     last_symbol_order = [i for i in orders if i['orderLegCollection'][0]['instrument']['symbol'] == symbol][-1]        
     fill_price = last_symbol_order['orderActivityCollection'][0]['executionLegs'][0]['price']

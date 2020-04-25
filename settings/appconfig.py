@@ -15,5 +15,5 @@ td = {
     'consumer_id': 'GG5KH9GJ8TK4X9QC8M3OCP2OBF33FDDH',
     'redirect_uri': 'http://localhost/TestApp2/',
     'capital': '10000',
-    'live_orders' : True
+    'live_orders' : False
 }

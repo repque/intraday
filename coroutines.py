@@ -31,9 +31,9 @@ def initial_breakout( period_length ):
     while True:
         point = (yield)
         if counter < period_length:
-            if point.time_stamp.time() > start_time.time():
-                counter += 1
-                max_price = max( max_price, point.price )
+                if point.time_stamp.time() > start_time.time():
+                    counter += 1
+                    max_price = max( max_price, point.price )
         else:
             if point.price > max_price:
                 signal = Signal( point=point, desc='break out' )
