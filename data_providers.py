@@ -14,7 +14,7 @@ def gen_csv_data( symbol=None, specific_day=None ):
     with open( '.\\data\\' + symbol + '.csv', 'r') as f:
         reader = csv.reader( f )
         for row in reader:
-            time_stamp = datetime.datetime.strptime( row[0], '%Y-%m-%d %H:%M:%S' )
+            time_stamp = datetime.datetime.strptime( row[0], '%Y-%m-%d %H:%M:%S.%f' )
             if specific_day and specific_day.date() != time_stamp.date():
                 continue
             price = float( row[1] )

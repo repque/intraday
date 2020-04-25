@@ -23,11 +23,11 @@ def run( configs, live=False, specific_day=None, cash=25000, commission=0.00 ):
         gen_test_data = partial( gen_csv_data, specific_day=specific_day ) # pass the specific_day argument to the coroutine
         dataProvider=gen_test_data
     else:
+        session_object = Session()
+        session_object.login()
         interval=1 # in live mode, how many minutes to sleep between requesting next data point
         dataProvider=gen_time_series
 
-    session_object = Session()
-    session_object.login()
     pnl = Pnl()
     pnl.initialize( configs, cash, commission )
 
@@ -55,13 +55,13 @@ if __name__ == '__main__':
     logging.config.fileConfig(".\\settings\\logging.conf")
 
     config1 = Config( symbol='FAS', equity_pct=0.50, 
-                 entry_rules=[initial_breakout(1)], 
+                 entry_rules=[initial_breakout(30)], 
                  exit_rules =[time_based(14,15), 
                               stop_loss(0.02), 
                               stop_profit(0.04)] )
 
     config2 = Config( symbol='FAZ', equity_pct=0.50, 
-                 entry_rules=[initial_breakout(1)], 
+                 entry_rules=[initial_breakout(30)], 
                  exit_rules =[time_based(14,15), 
                               stop_loss(0.02), 
                               stop_profit(0.04)] )
@@ -70,4 +70,5 @@ if __name__ == '__main__':
 
     # to replay specific day, set the argument to datetime instance:
     # for example: specific_day = datetime.datetime( 2020, 4, 2 )
-    run( configs, live = True, specific_day = None )
+    specific_day = datetime.datetime( 2020, 4, 24 )
+    run( configs, live = False, specific_day = specific_day )
