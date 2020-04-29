@@ -11,7 +11,7 @@ def get_session( force_login = False ):
     s = Session()
     if s.session is None or force_login:
         s.login()
-        return s.session
+    return s.session
 
 def get_data_point( symbol ):
     ''' Pull current data point here from data provider for the symbol '''    

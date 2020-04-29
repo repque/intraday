@@ -71,4 +71,4 @@ if __name__ == '__main__':
     # to replay specific day, set the argument to datetime instance:
     # for example: specific_day = datetime.datetime( 2020, 4, 2 )
     specific_day = datetime.datetime( 2020, 4, 24 )
-    run( configs, live = False, specific_day = specific_day )
+    run( configs, live = True, specific_day = specific_day )
