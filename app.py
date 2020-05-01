@@ -54,13 +54,13 @@ if __name__ == '__main__':
     # init logging
     logging.config.fileConfig(".\\settings\\logging.conf")
 
-    config1 = Config( symbol='FAS', equity_pct=0.50, 
+    config1 = Config( symbol='FAS', equity_pct=0.10, 
                  entry_rules=[initial_breakout(30)], 
                  exit_rules =[time_based(14,15), 
                               stop_loss(0.02), 
                               stop_profit(0.04)] )
 
-    config2 = Config( symbol='FAZ', equity_pct=0.50, 
+    config2 = Config( symbol='FAZ', equity_pct=0.10, 
                  entry_rules=[initial_breakout(30)], 
                  exit_rules =[time_based(14,15), 
                               stop_loss(0.02), 
@@ -70,5 +70,5 @@ if __name__ == '__main__':
 
     # to replay specific day, set the argument to datetime instance:
     # for example: specific_day = datetime.datetime( 2020, 4, 2 )
-    specific_day = datetime.datetime( 2020, 4, 24 )
-    run( configs, live = True, specific_day = specific_day )
+    # specific_day = datetime.datetime( 2020, 4, 24 )
+    run( configs, live = True, specific_day = False )
