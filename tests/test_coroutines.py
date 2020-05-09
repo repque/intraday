@@ -6,14 +6,14 @@ from coroutines import initial_breakout, stop_loss, stop_profit, time_based
 
 class TestCoroutines(unittest.TestCase):
 
-    def _next_point( self, p, dt=None ):
+    def _next_point( self, p, dt=None, df=None ):
         ''' helper function to generate data points for testing '''
         if dt is None:
             dt = self.dt
 
         point = Point( dt, p )
         self.dt = dt + datetime.timedelta(minutes=1)
-        return point
+        return (point, df)
 
     def setUp( self ):
         self.dt = datetime.datetime( 2020, 4, 6, 9, 30 )

@@ -8,6 +8,7 @@ from   coroutines import time_based
 from   custom import submit_order
 from   positions import Pnl
 import utils 
+import pandas as pd
 
 Point = namedtuple( 'Point', ['time_stamp', 'price'] )
 
@@ -22,6 +23,7 @@ class Strategy( object ):
         self.eod_exit    = time_based( 15, 59 ) # end-of-day exit hard-coded rule
         self.pnl         = pnl
         self.live        = live # are we running in Live mode or in Test mode?
+        self.all_points  = []
 
         # these could come from config eventually
         start_hour = 9
@@ -38,6 +40,8 @@ class Strategy( object ):
         ''' get the next data point and process it '''
         try:
             point = next( self.time_series )
+            self.all_points.append( point )
+            df = pd.DataFrame( self.all_points, columns=Point._fields )
 
             if self.live:
                 utils.save_point( self.config.symbol, point )
@@ -49,16 +53,16 @@ class Strategy( object ):
                 return None
 
             # default exit at eod, if still in position
-            eod_exit = self.eod_exit.send( point )
+            eod_exit = self.eod_exit.send( (point, df) )
             if eod_exit and self.in_position:
                 self.in_position = False
                 return eod_exit
             
             # apply entry/exit rules
             if self.in_position:
-                signal = self.config.run_exit_rules( point )
+                signal = self.config.run_exit_rules( point, df )
             else:
-                signal = self.config.run_entry_rules( point )
+                signal = self.config.run_entry_rules( point, df )
             
             # if signal is generated - return it for execution    
             if signal:
@@ -86,17 +90,17 @@ class Config( object ):
         self.exit_rules  = exit_rules
         self.symbol      = symbol
         
-    def run_exit_rules( self, point ):
+    def run_exit_rules( self, point, df ):
         for func in self.exit_rules:
-            result = func.send( point )
+            result = func.send( (point, df) )
             if result: # if any exit rule matches
                 result.is_entry = False
                 result.symbol   = self.symbol
                 return result
         
-    def run_entry_rules( self, point ):
+    def run_entry_rules( self, point, df ):
         for func in self.entry_rules:
-            result = func.send( point )
+            result = func.send( (point, df) )
             if result: # if any entry rule matches
                 result.is_entry = True
                 result.symbol   = self.symbol
