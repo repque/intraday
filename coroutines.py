@@ -16,7 +16,7 @@ def coroutine(func):
 def time_based( hour, minute ):
     ''' Raise signal when the timestamp of an incoming price point matches the passed in hour/minute '''
     while True:
-        point = (yield) 
+        point, _ = (yield) 
         if point.time_stamp.hour == hour and point.time_stamp.minute == minute:
             yield Signal( point=point, desc='hour: {}, minute: {}'.format( hour, minute ) )
 
@@ -29,7 +29,7 @@ def initial_breakout( period_length ):
     max_price = 0
     start_time = datetime.datetime( 2020, 4, 5, 9, 30 ) # date doesn't matter
     while True:
-        point = (yield)
+        point, _ = (yield)
         if counter < period_length:
             if point.time_stamp.time() <= ( start_time + datetime.timedelta( minutes=period_length ) ).time():
                 counter += 1
@@ -49,7 +49,7 @@ def stop_loss( percent ):
     initial_price = 0
     trigger_level = 0
     while True:
-        point = (yield) 
+        point, _ = (yield) 
         if initial_price == 0:
             initial_price = point.price
             trigger_level = initial_price - initial_price * percent
@@ -68,7 +68,7 @@ def stop_profit( percent ):
     initial_price = 0
     trigger_level = 0
     while True:
-        point = (yield) 
+        point, _ = (yield) 
         if initial_price == 0:
             initial_price = point.price
             trigger_level = initial_price + initial_price * percent
