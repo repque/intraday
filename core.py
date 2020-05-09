@@ -40,8 +40,8 @@ class Strategy( object ):
         ''' get the next data point and process it '''
         try:
             point = next( self.time_series )
-            self.all_points.append( {'time_stamp':point.time_stamp,'price':point.price} )
-            df = pd.DataFrame( self.all_points ) 
+            self.all_points.append( point )
+            df = pd.DataFrame( self.all_points, columns=Point._fields )
 
             if self.live:
                 utils.save_point( self.config.symbol, point )
