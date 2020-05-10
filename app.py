@@ -10,6 +10,7 @@ from   core import Config, Strategy, execute_signal
 from   coroutines import initial_breakout, time_based, stop_loss, stop_profit
 from   data_providers import gen_csv_data, gen_time_series
 from   positions import Pnl
+import utils
 
 def run( configs, live=False, specific_day=None, cash=25000, commission=0.01 ):
     ''' main event loop 
@@ -35,6 +36,7 @@ def run( configs, live=False, specific_day=None, cash=25000, commission=0.01 ):
         if not active_strategies:
             logging.debug( 'All Done!' )
             logging.info( pnl.get_report() )
+            utils.plot( pnl, live, specific_day is None )
             break # we're done
         
         for strategy in active_strategies:
