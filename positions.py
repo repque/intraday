@@ -1,4 +1,5 @@
 from   collections import namedtuple
+from   datetime import datetime
 import logging
 
 from   signals import Signal
@@ -13,23 +14,30 @@ class Position( object ):
         self.commission = commission
         self.total_commissions = 0.0
         self.realized_pl = 0.0
+        self.total_qty = 0
 
         self.mtm_pl = 0.0
         self.qty = 0
         self.starting_equity = 0
+        self.all_points = []
+        self.buys = []
+        self.sells = []
 
     def handle_fill( self, trade ):
         self.total_commissions += trade.qty * self.commission
-
         if trade.is_entry:
             self.qty = trade.qty
+            self.total_qty += trade.qty
             self.starting_equity = trade.qty * trade.price
+            self.buys.append( datetime.strftime( trade.time_stamp, '%Y-%m-%d %H:%M:%S' ) )
         else:
             self.realized_pl += trade.qty * trade.price - self.starting_equity
             self.qty = 0 # no partial trades allowed
+            self.sells.append( datetime.strftime( trade.time_stamp, '%Y-%m-%d %H:%M:%S' ) )
 
     def market_data_update( self, point ):
         ''' keep track of mtm pl when position is open '''
+        self.all_points.append( point )
         if self.qty:
             self.mtm_pl = self.qty * point.price - self.starting_equity
         else:

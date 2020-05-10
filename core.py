@@ -40,17 +40,21 @@ class Strategy( object ):
         ''' get the next data point and process it '''
         try:
             point = next( self.time_series )
+
+            # skip pre-market and after-market data
+            current_time =  point.time_stamp.hour*60 + point.time_stamp.minute
+
+            if  current_time < self.start_time or current_time >= self.end_time:
+                return None
+
             self.all_points.append( point )
             df = pd.DataFrame( self.all_points, columns=Point._fields )
 
             if self.live:
                 utils.save_point( self.config.symbol, point )
             
-            # skip pre-market and after-market data
-            current_time =  point.time_stamp.hour*60 + point.time_stamp.minute
-
-            if  current_time < self.start_time or current_time >= self.end_time:
-                return None
+            # track mtm pnl in response to market data changes
+            self.pnl.market_data_update( self.config.symbol, point )
 
             # default exit at eod, if still in position
             eod_exit = self.eod_exit.send( (point, df) )
@@ -68,9 +72,6 @@ class Strategy( object ):
             if signal:
                 self.in_position = signal.is_entry                
                 return signal 
-            
-            # track mtm pnl in response to market data changes
-            self.pnl.market_data_update( self.config.symbol, point )
 
         except StopIteration:
             self.active = False
@@ -114,6 +115,7 @@ class Trade( object ):
         self.qty        = qty
         self.price      = price
         self.is_entry   = signal.is_entry
+        self.time_stamp = signal.point.time_stamp # making an assumption here that the fill is isntant, but it's ok for now
         
     def __repr__(self):
         return "<{klass} {attrs}>".format(
