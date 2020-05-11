@@ -4,6 +4,7 @@ from   datetime import datetime
 import functools
 import pandas as pd
 import plotly.graph_objects as go
+import os
 
 class memoized(object):
    '''Decorator. Caches a function's return value each time it is called.
@@ -101,7 +102,10 @@ def plot_day( symbol, date, df, buys, sells, pnl, qty, save=True ):
     )
     
     if (save):
-        filename =  '.\\charts\\' + '{}_{}.html'.format(date, symbol)
+        directory = '.\\charts'
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        filename =  directory + '\\{}_{}.html'.format(date, symbol)
         fig.write_html(filename)
     else:
         fig.show()        
