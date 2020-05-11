@@ -139,3 +139,5 @@ cython_debug/
 /.vs/VSWorkspaceState.json
 /.vs/intraday/v16/TestStore/0/testlog.manifest
 /.vs/intraday/v16/TestStore/0/000.testlog
+/charts
+/data
