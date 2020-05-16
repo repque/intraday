@@ -24,6 +24,7 @@ class Strategy( object ):
         self.pnl         = pnl
         self.live        = live # are we running in Live mode or in Test mode?
         self.all_points  = []
+        self.curr_date   = datetime.datetime( 1900, 1, 1 ).date()
 
         # these could come from config eventually
         start_hour = 9
@@ -46,6 +47,10 @@ class Strategy( object ):
 
             if  current_time < self.start_time or current_time >= self.end_time:
                 return None
+
+            if self.curr_date != point.time_stamp.date():
+                self.curr_date = point.time_stamp.date()
+                self.all_points = []
 
             self.all_points.append( point )
             df = pd.DataFrame( self.all_points, columns=Point._fields )
