@@ -58,7 +58,7 @@ def plot( pnl, live, is_multiday ):
         for symbol, position in pnl.positions.items():
             if position.buys:
                 df = pd.DataFrame.from_records( position.all_points, index='time_stamp', columns=['time_stamp', 'price'] )                
-                plot_day( symbol, position.buys[-1], df, position.buys, position.sells, position.realized_pl + position.mtm_pl, position.total_qty, save=live )
+                plot_day( symbol, position.buys[-1][0], df, position.buys, position.sells, position.realized_pl + position.mtm_pl, position.total_qty, save=live )
 
 def plot_day( symbol, date, df, buys, sells, pnl, qty, save=True ):
     ''' Creates a plot of day's prices with both buy and sell markers.
@@ -73,19 +73,26 @@ def plot_day( symbol, date, df, buys, sells, pnl, qty, save=True ):
     '''
     date = datetime.strptime( date, '%Y-%m-%d %H:%M:%S' ).date() # convert from string to datetime
 
-    df_buys = df[df.index.isin(buys)]
-    df_sells = df[df.index.isin(sells)]
+    df_buys  = df[df.index.isin([time_stamp for time_stamp, _ in buys])].copy()
+    df_sells = df[df.index.isin([time_stamp for time_stamp, _ in sells])].copy()
+
+    df_buys['desc']  = [desc for _, desc in buys]
+    df_sells['desc'] = [desc for _, desc in sells]
 
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=df_buys.index, y=df_buys['price'],
-                        mode='markers',
+                        mode='markers+text',
                         marker_symbol=[5, 'triangle-up'],
                         marker_size=15,
                         name='Buy',
+                        text=df_buys['desc'],
+                        textposition="bottom center",
                         marker=dict(color='green')))
     fig.add_trace(go.Scatter(x=df_sells.index, y=df_sells['price'],
-                        mode='markers',
+                        mode='markers+text',
                         name='Sell',
+                        text=df_sells['desc'],
+                        textposition="top center",
                         marker_symbol=[6, 'triangle-down'],
                         marker_size=15,
                         marker=dict(color='red')))

@@ -116,6 +116,7 @@ class Trade( object ):
         self.price      = price
         self.is_entry   = signal.is_entry
         self.time_stamp = signal.point.time_stamp # making an assumption here that the fill is isntant, but it's ok for now
+        self.desc       = signal.desc
         
     def __repr__(self):
         return "<{klass} {attrs}>".format(
