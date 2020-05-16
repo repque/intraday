@@ -34,7 +34,6 @@ class Position( object ):
             self.realized_pl += trade.qty * trade.price - self.starting_equity
             self.qty = 0 # no partial trades allowed
             self.sells.append( ( datetime.strftime( trade.time_stamp, '%Y-%m-%d %H:%M:%S' ), trade.desc ) )
-        logging.debug( trade )
 
     def market_data_update( self, point ):
         ''' keep track of mtm pl when position is open '''
