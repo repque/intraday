@@ -130,11 +130,14 @@ def execute_signal( signal ):
     if signal.is_entry:
         needed_cash = pnl.starting_equity * signal.equity_pct
         if needed_cash > pnl.available_cash:
-            logging.warn( 'Not enough cash to open position for {}: need: {}, have:{}. Skipping signal ...', signal.symbol, needed_cash, pnl.available_cash )
-            return None
+            needed_cash = pnl.available_cash
 
         qty = needed_cash // signal.point.price
         qty = qty - qty % 10
+
+        if (qty == 0):
+            logging.warn( 'Not enough cash to open position for {}: need: {}, have:{}. Skipping signal ...', signal.symbol, needed_cash, pnl.available_cash )
+            return None
     else:
         position = pnl.positions[ signal.symbol ]
         qty = position.qty
