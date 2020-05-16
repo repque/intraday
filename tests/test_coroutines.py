@@ -2,7 +2,7 @@ import datetime
 import unittest
 
 from core import Point
-from coroutines import initial_breakout, stop_loss, stop_profit, time_based
+from coroutines import initial_breakout, stop_loss, stop_profit, time_based, all_conditions
 
 class TestCoroutines(unittest.TestCase):
 
@@ -114,6 +114,26 @@ class TestCoroutines(unittest.TestCase):
         # no more triggerring because we're matching exactly
         signal = cr.send( self._next_point( 99.50 ) )
         self.assertIsNone( signal )
+
+    def test_and_logic( self ):
+        cr = all_conditions( [initial_breakout( 3, repeat=True ), initial_breakout( 4, repeat=True )] )
+
+        # set initial range
+        cr.send( self._next_point( 50.00 ) )
+        cr.send( self._next_point( 50.25 ) )
+        cr.send( self._next_point( 50.10 ) )
+
+        # now 4th bar exceeds 3-bar range, so the first coroutine would trigger, but the second hasn't, so AND condition is not met
+        signal = cr.send( self._next_point( 50.27 ) )
+        self.assertIsNone( signal )
+
+        # no signal
+        signal = cr.send( self._next_point( 50.26 ) )
+        self.assertIsNone( signal )
+
+        # both conditions satisfied - signal raised
+        signal = cr.send( self._next_point( 50.28 ) )
+        self.assertIsNotNone( signal )
 
 if __name__ == '__main__':
     unittest.main()
