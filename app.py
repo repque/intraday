@@ -12,18 +12,17 @@ from   data_providers import gen_csv_data, gen_time_series
 from   positions import Pnl
 import utils
 
-def run( configs, live=False, specific_day=None, cash=25000, commission=0.01 ):
+def run( configs, live=False, specific_day=None, cash=25000, commission=0.01, interval=1 ):
     ''' main event loop 
 
         if 'live' mode is False, we're testing and running against previously recorded data.
         The 'specific_day' argument allows to run against a specific pre-recorded day. By default, all data is replayed
     '''
     if not live:
-        interval=0  # in test mode, no need to sleep, just run
+        interval = 0 # no need to sleep when testing
         gen_test_data = partial( gen_csv_data, specific_day=specific_day ) # pass the specific_day argument to the coroutine
         dataProvider=gen_test_data
     else:
-        interval=1, # in live mode, how many minutes to sleep between requesting next data point
         dataProvider=gen_time_series
 
     pnl = Pnl()
