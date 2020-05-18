@@ -13,7 +13,7 @@ from   positions import Pnl
 import utils
 import pandas as pd
 
-def run( configs, live=False, specific_day=None, cash=25000, commission=0, interval=1, save=True ):
+def run( configs, live=False, specific_day=None, cash=25000, commission=0, interval=1, save_charts=True ):
     ''' main event loop 
 
         if 'live' mode is False, we're testing and running against previously recorded data.
@@ -38,7 +38,7 @@ def run( configs, live=False, specific_day=None, cash=25000, commission=0, inter
         if not active_strategies:
             logging.debug( 'All Done!' )
             logging.info( pnl.get_report() )
-            utils.plot( pnl, save, specific_day is None, charts_folder )
+            utils.plot( pnl, save_charts, specific_day is None, charts_folder )
             break # we're done
         
         for strategy in active_strategies:
@@ -51,16 +51,17 @@ def run( configs, live=False, specific_day=None, cash=25000, commission=0, inter
                 
         time.sleep( interval * 60 )
 
-def run_dates (configs, save):
+def run_dates (configs, save_charts):
     '''Process one day at a time, export and combine charts'''
     charts_folder='.\\charts\\testing' 
     dates = get_dates( configs[0].symbol )
     for specific_day in dates:
-        run( configs, live = False, specific_day = datetime.datetime.combine(specific_day, datetime.datetime.min.time()), save = save )
-        if len(configs) > 1:
+        run( configs, live = False, specific_day = datetime.datetime.combine(specific_day, datetime.datetime.min.time()), save_charts = save_charts )
+        if (len(configs)) > 1 & save_charts:
             utils.combine_charts(charts_folder, combine_pattern = specific_day)                    
-    for eachconfig in configs:
-        utils.combine_charts(charts_folder, combine_pattern = eachconfig.symbol)
+    if (save_charts):
+        for eachconfig in configs:
+            utils.combine_charts(charts_folder, combine_pattern = eachconfig.symbol)
 
 def get_dates (symbol):
     '''Get unique dates from symbol CSV'''
@@ -83,5 +84,5 @@ if __name__ == '__main__':
 
     # to replay specific day, set the argument to datetime instance:
     # for example: specific_day = datetime.datetime( 2020, 4, 2 )
-    #run( configs, live = False, specific_day = None, save = False )
-    run_dates (configs, save = True)
+    #run( configs, live = False, specific_day = datetime.datetime( 2020, 4, 2 ), save_charts = True )
+    run_dates (configs, save_charts = True)
