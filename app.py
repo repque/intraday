@@ -13,7 +13,7 @@ from   positions import Pnl
 import utils
 import pandas as pd
 
-def run( configs, live=False, specific_day=None, cash=25000, commission=0, interval=1, daily_charts=True, charts_folder='.\\charts\\testing' ):
+def run( configs, live=False, specific_day=None, cash=25000, commission=0, interval=1, save=True ):
     ''' main event loop 
 
         if 'live' mode is False, we're testing and running against previously recorded data.
@@ -23,8 +23,10 @@ def run( configs, live=False, specific_day=None, cash=25000, commission=0, inter
         interval = 0 # no need to sleep when testing
         gen_test_data = partial( gen_csv_data, specific_day=specific_day ) # pass the specific_day argument to the coroutine
         dataProvider=gen_test_data
+        charts_folder='.\\charts\\testing'
     else:
         dataProvider=gen_time_series
+        charts_folder = '.\\charts\\live'
 
     pnl = Pnl()
     pnl.initialize( configs, cash, commission )
@@ -36,7 +38,7 @@ def run( configs, live=False, specific_day=None, cash=25000, commission=0, inter
         if not active_strategies:
             logging.debug( 'All Done!' )
             logging.info( pnl.get_report() )
-            utils.plot( pnl, daily_charts, specific_day is None, charts_folder )
+            utils.plot( pnl, save, specific_day is None, charts_folder )
             break # we're done
         
         for strategy in active_strategies:
@@ -49,6 +51,24 @@ def run( configs, live=False, specific_day=None, cash=25000, commission=0, inter
                 
         time.sleep( interval * 60 )
 
+def run_dates (configs, save):
+    '''Process one day at a time, export and combine charts'''
+    charts_folder='.\\charts\\testing' 
+    dates = get_dates( configs[0].symbol )
+    for specific_day in dates:
+        run( configs, live = False, specific_day = datetime.datetime.combine(specific_day, datetime.datetime.min.time()), save = save )
+        if len(configs) > 1:
+            utils.combine_charts(charts_folder, combine_pattern = specific_day)                    
+    for eachconfig in configs:
+        utils.combine_charts(charts_folder, combine_pattern = eachconfig.symbol)
+
+def get_dates (symbol):
+    '''Get unique dates from symbol CSV'''
+    df = pd.read_csv('.\\data\\' + symbol + '.csv', header=None, index_col=0)
+    df.index = pd.to_datetime(df.index, format='%Y-%m-%d %H:%M:%S')
+    df['date'] = df.index.date     
+    return df['date'].unique()
+          
 if __name__ == '__main__':
     # init logging
     logging.config.fileConfig(".\\settings\\logging.conf")
@@ -63,32 +83,5 @@ if __name__ == '__main__':
 
     # to replay specific day, set the argument to datetime instance:
     # for example: specific_day = datetime.datetime( 2020, 4, 2 )
-    live = False
-    specific_day = None #datetime.datetime( 2020, 4, 1 )
-    day_by_day = True #Change if you want to process whole set instead of day by day
-
-    if not(live):
-        charts_folder = '.\\charts\\testing'
-        if not(specific_day):
-            if (day_by_day):
-                #Process one day at a time, export and combine charts                
-                df = pd.read_csv('.\\data\\' + configs[0].symbol + '.csv', header=None, index_col=0)
-                df.index = pd.to_datetime(df.index, format='%Y-%m-%d %H:%M:%S')
-                df['date'] = df.index.date     
-                dates = df['date'].unique()
-                for specific_day in dates:
-                    run( configs, live, specific_day = datetime.datetime.combine(specific_day, datetime.datetime.min.time()), daily_charts = True, charts_folder = charts_folder )
-                    if len(configs) > 1:
-                        utils.combine_charts(charts_folder, combine_pattern = specific_day)                    
-                for eachconfig in configs:
-                    utils.combine_charts(charts_folder, combine_pattern = eachconfig.symbol)
-            else:
-                #Process whole set of days at once
-                run( configs, live, specific_day = None, daily_charts = True, charts_folder = charts_folder )
-        else:
-            #Process for specific day
-            run( configs, live, specific_day = specific_day, daily_charts = True, charts_folder = charts_folder )
-    else:
-        #Run live
-        charts_folder = '.\\charts\\live'
-        run( configs, live, specific_day = None, daily_charts = True, charts_folder = charts_folder )
+    #run( configs, live = False, specific_day = None, save = False )
+    run_dates (configs, save = True)

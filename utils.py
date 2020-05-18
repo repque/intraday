@@ -51,7 +51,7 @@ def save_point( symbol, point ):
         writer = csv.writer( f )
         writer.writerow( point )
 
-def plot( pnl, daily_charts, is_multiday, charts_folder ):
+def plot( pnl, save, is_multiday, charts_folder ):
     ''' Plot buys and sells for each each position, if running for a single day.
         If running in daily_charts mode, saves the images, otherwise just generates and shows them.
         If testing using multiple days, displays equity curve (TODO)
@@ -59,9 +59,9 @@ def plot( pnl, daily_charts, is_multiday, charts_folder ):
     if not is_multiday:
         for symbol, position in pnl.positions.items():
             df = pd.DataFrame.from_records( position.all_points, index='time_stamp', columns=['time_stamp', 'price'] )                
-            plot_day( symbol, str(df.index[-1]), df, position.buys, position.sells, position.realized_pl + position.mtm_pl, position.total_qty, daily_charts, charts_folder )
+            plot_day( symbol, str(df.index[-1]), df, position.buys, position.sells, position.realized_pl + position.mtm_pl, position.total_qty, save, charts_folder )
 
-def plot_day( symbol, date, df, buys, sells, pnl, qty, daily_charts, charts_folder ):
+def plot_day( symbol, date, df, buys, sells, pnl, qty, save, charts_folder ):
     ''' Creates a plot of day's prices with both buy and sell markers.
 
         Arguments:
@@ -107,7 +107,7 @@ def plot_day( symbol, date, df, buys, sells, pnl, qty, daily_charts, charts_fold
         showlegend=False
     )
     
-    if (daily_charts):        
+    if (save):        
         if not os.path.exists(charts_folder):
             os.makedirs(charts_folder)
         filename =  charts_folder + '\\{}_{}.html'.format(date, symbol)
