@@ -5,6 +5,8 @@ import functools
 import pandas as pd
 import plotly.graph_objects as go
 import os
+import shutil
+import glob
 
 class memoized(object):
    '''Decorator. Caches a function's return value each time it is called.
@@ -49,18 +51,17 @@ def save_point( symbol, point ):
         writer = csv.writer( f )
         writer.writerow( point )
 
-def plot( pnl, live, is_multiday ):
+def plot( pnl, save, is_multiday, charts_folder ):
     ''' Plot buys and sells for each each position, if running for a single day.
-        If running in live mode, saves the images, otherwise just generates and shows them.
+        If running in daily_charts mode, saves the images, otherwise just generates and shows them.
         If testing using multiple days, displays equity curve (TODO)
     '''
     if not is_multiday:
         for symbol, position in pnl.positions.items():
-            if position.buys:
-                df = pd.DataFrame.from_records( position.all_points, index='time_stamp', columns=['time_stamp', 'price'] )                
-                plot_day( symbol, position.buys[-1][0], df, position.buys, position.sells, position.realized_pl + position.mtm_pl, position.total_qty, save=live )
+            df = pd.DataFrame.from_records( position.all_points, index='time_stamp', columns=['time_stamp', 'price'] )                
+            plot_day( symbol, str(df.index[-1]), df, position.buys, position.sells, position.realized_pl + position.mtm_pl, position.total_qty, save, charts_folder )
 
-def plot_day( symbol, date, df, buys, sells, pnl, qty, save=True ):
+def plot_day( symbol, date, df, buys, sells, pnl, qty, save, charts_folder ):
     ''' Creates a plot of day's prices with both buy and sell markers.
 
         Arguments:
@@ -82,20 +83,18 @@ def plot_day( symbol, date, df, buys, sells, pnl, qty, save=True ):
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=df_buys.index, y=df_buys['price'],
                         mode='markers+text',
-                        marker_symbol=[5, 'triangle-up'],
                         marker_size=15,
                         name='Buy',
                         text=df_buys['desc'],
                         textposition="bottom center",
-                        marker=dict(color='green')))
+                        marker=dict(color='green', symbol='triangle-up')))
     fig.add_trace(go.Scatter(x=df_sells.index, y=df_sells['price'],
                         mode='markers+text',
                         name='Sell',
                         text=df_sells['desc'],
                         textposition="top center",
-                        marker_symbol=[6, 'triangle-down'],
                         marker_size=15,
-                        marker=dict(color='red')))
+                        marker=dict(color='red', symbol='triangle-down')))
     fig.add_trace(go.Scatter(x=df.index, y=df['price'],
                         mode='lines',
                         name='Prices',
@@ -108,11 +107,20 @@ def plot_day( symbol, date, df, buys, sells, pnl, qty, save=True ):
         showlegend=False
     )
     
-    if (save):
-        directory = '.\\charts'
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-        filename =  directory + '\\{}_{}.html'.format(date, symbol)
+    if (save):        
+        if not os.path.exists(charts_folder):
+            os.makedirs(charts_folder)
+        filename =  charts_folder + '\\{}_{}.html'.format(date, symbol)
         fig.write_html(filename)
     else:
-        fig.show()        
+        fig.show()
+
+def combine_charts( directory, combine_pattern):
+    ''' Combine charts in a given directory based on a filename pattern '''
+    outfilename = '{}\\{}_combined.html'.format(directory, combine_pattern)
+    with open(outfilename, 'wb') as outfile:
+        for filename in glob.glob('{}\\*{}*.html'.format(directory, combine_pattern)):
+            if filename == outfilename:
+                continue
+            with open(filename, 'rb') as readfile:
+                shutil.copyfileobj(readfile, outfile)
