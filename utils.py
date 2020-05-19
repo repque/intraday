@@ -116,11 +116,11 @@ def plot_day( symbol, date, df, buys, sells, pnl, qty, save, charts_folder ):
         fig.show()
 
 def combine_charts( directory, combine_pattern):
+    ''' Combine charts in a given directory based on a filename pattern '''
     outfilename = '{}\\{}_combined.html'.format(directory, combine_pattern)
     with open(outfilename, 'wb') as outfile:
         for filename in glob.glob('{}\\*{}*.html'.format(directory, combine_pattern)):
             if filename == outfilename:
-                # don't want to copy the output into the output
                 continue
             with open(filename, 'rb') as readfile:
                 shutil.copyfileobj(readfile, outfile)
