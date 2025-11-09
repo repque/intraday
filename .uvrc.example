@@ -1,0 +1,32 @@
+# UV Quick Reference for Intraday Trading Framework
+
+## Initial Setup
+uv sync --no-install-project    # Install all dependencies from uv.lock
+source .venv/bin/activate       # Activate virtual environment
+
+## Running Scripts
+uv run python app.py            # Run without activating venv
+uv run python test_e2e.py       # Run E2E tests
+
+## Managing Dependencies
+uv add pandas                   # Add new dependency
+uv remove six                   # Remove dependency
+uv sync                         # Sync environment with pyproject.toml
+
+## Running Tests
+uv run pytest                   # Run all tests
+uv run pytest tests/test_coroutines.py  # Run specific test file
+
+## Updating Dependencies
+uv lock --upgrade               # Update all dependencies
+uv lock --upgrade-package pandas  # Update specific package
+
+## Development
+uv run python -m pytest --cov   # Run tests with coverage
+uv pip list                     # List installed packages
+uv pip freeze                   # Show exact versions
+
+## Useful Commands
+uv venv                         # Create new virtual environment
+uv python list                  # List available Python versions
+uv python install 3.11          # Install specific Python version
