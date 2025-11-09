@@ -1,5 +1,6 @@
 import csv
 import datetime
+import os
 
 from   core import Point
 from   custom import get_data_point
@@ -11,7 +12,7 @@ def gen_time_series( symbol=None ):
         yield Point( time_stamp=time_stamp, price=price )
 
 def gen_csv_data( symbol=None, specific_day=None ):
-    with open( '.\\data\\' + symbol + '.csv', 'r') as f:
+    with open( os.path.join('data', symbol + '.csv'), 'r') as f:
         reader = csv.reader( f )
         for row in reader:
             time_stamp = datetime.datetime.strptime( row[0], '%Y-%m-%d %H:%M:%S' )

@@ -47,7 +47,7 @@ class Singleton( object ):
 
 @memoized
 def save_point( symbol, point ):
-    with open( '.\\data\\' + symbol + '.csv', 'a', newline='') as f:
+    with open( os.path.join('data', symbol + '.csv'), 'a', newline='') as f:
         writer = csv.writer( f )
         writer.writerow( point )
 
@@ -107,19 +107,19 @@ def plot_day( symbol, date, df, buys, sells, pnl, qty, save, charts_folder ):
         showlegend=False
     )
     
-    if (save):        
+    if (save):
         if not os.path.exists(charts_folder):
             os.makedirs(charts_folder)
-        filename =  charts_folder + '\\{}_{}.html'.format(date, symbol)
+        filename = os.path.join(charts_folder, '{}_{}.html'.format(date, symbol))
         fig.write_html(filename)
     else:
         fig.show()
 
 def combine_charts( directory, combine_pattern):
     ''' Combine charts in a given directory based on a filename pattern '''
-    outfilename = '{}\\{}_combined.html'.format(directory, combine_pattern)
+    outfilename = os.path.join(directory, '{}_combined.html'.format(combine_pattern))
     with open(outfilename, 'wb') as outfile:
-        for filename in glob.glob('{}\\*{}*.html'.format(directory, combine_pattern)):
+        for filename in glob.glob(os.path.join(directory, '*{}*.html'.format(combine_pattern))):
             if filename == outfilename:
                 continue
             with open(filename, 'rb') as readfile:

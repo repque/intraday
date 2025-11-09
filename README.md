@@ -684,6 +684,175 @@ Submit order to your broker's API.
 
 **Returns:** Executed price (float)
 
+## End-to-End Testing
+
+The framework includes a comprehensive end-to-end test that demonstrates the complete workflow from data generation through chart creation.
+
+### Running the E2E Test
+
+```bash
+python test_e2e.py
+```
+
+This automated test performs the following steps:
+
+1. **Generates Synthetic Test Data**
+   - Creates 3 days of realistic intraday price data for symbol 'TEST'
+   - Simulates opening gaps, intraday volatility, and breakout patterns
+   - Saves to `data/TEST.csv` (1,170 price points)
+
+2. **Runs Backtests**
+   - Tests a 45-minute breakout strategy with 2% exits on 2020-04-01
+   - Tests a 30-minute breakout strategy with 1% exits on 2020-04-02
+   - Demonstrates different strategy configurations and their results
+
+3. **Generates Interactive Charts**
+   - Creates HTML charts showing price action, buy/sell signals, and P&L
+   - Saves charts to `charts/testing/` directory
+   - Each chart is approximately 4.7MB with full Plotly interactivity
+
+4. **Validates Results**
+   - Verifies chart files were created successfully
+   - Reports P&L for each backtest run
+   - Provides file locations and next steps
+
+### Example Output
+
+When you run the E2E test, you'll see output like this:
+
+```
+======================================================================
+STEP 1: Generating Synthetic Test Data
+======================================================================
+Generated 1170 price points for TEST
+Saved to: ./data/TEST.csv
+Date range: 2020-04-01 to 2020-04-03
+Price range: $251.06 to $289.52
+
+======================================================================
+STEP 2: Running Single Strategy Backtest (Specific Day)
+======================================================================
+Strategy: 45-minute breakout with 2% stop loss/profit
+Testing date: 2020-04-01
+
+Executing signal: break out (entry at $259.93)
+Executing signal: profit exit: broke above $264.945
+PnlReport(starting_equity=25000, ending_equity=25269, net=269, total_pl=269)
+
+======================================================================
+STEP 3: Running Alternative Strategy Configuration
+======================================================================
+Strategy: 30-minute breakout with tighter 1% exits
+Testing date: 2020-04-02
+
+Executing signal: break out (entry at $287.54)
+Executing signal: profit exit: broke above $294.415
+PnlReport(starting_equity=25000, ending_equity=25462, net=462, total_pl=462)
+
+======================================================================
+STEP 4: Verifying Chart Generation
+======================================================================
+SUCCESS: Generated 2 chart files:
+  - 2020-04-01_TEST.html (4,789,092 bytes)
+  - 2020-04-02_TEST.html (4,789,087 bytes)
+
+Charts location: /Users/your-path/intraday/charts/testing
+```
+
+### Understanding the Charts
+
+The generated HTML charts are interactive Plotly visualizations that display:
+
+**Visual Elements:**
+- **Blue Line**: Intraday price movement (1-minute bars)
+- **Green Triangles (▲)**: Buy signals with entry descriptions
+- **Red Triangles (▼)**: Sell signals with exit descriptions
+- **Title**: Shows symbol, date, P&L, and final position size
+
+**Interactive Features:**
+- Hover over any point to see exact time and price
+- Hover over buy/sell markers to see signal descriptions
+- Zoom in/out by dragging or using the toolbar
+- Pan across the chart to examine different time periods
+- Download as PNG using the camera icon
+
+**Example Chart Interpretation:**
+
+For the 2020-04-01 test with 45-minute breakout strategy:
+1. Price opens at $251.06 at 9:30 AM
+2. System observes first 45 minutes (9:30-10:15) and tracks high of $259.93
+3. At 10:15 AM, price breaks above $259.93, triggering entry signal (green triangle)
+4. Position entered: ~48 shares at $259.93 (50% of $25,000 cash)
+5. At 10:20 AM, price reaches $266.66, exceeding 2% profit target
+6. Exit signal triggered (red triangle), position closed
+7. **Result**: $269 profit (+1.08% return on capital)
+
+### Customizing the E2E Test
+
+Edit `test_e2e.py` to experiment with different strategies:
+
+```python
+# Modify strategy parameters
+config = Config(
+    symbol='TEST',
+    equity_pct=0.75,  # Use 75% of capital instead of 50%
+    entry_rules=[initial_breakout(30)],  # Shorter observation period
+    exit_rules=[
+        stop_loss(0.015),      # Tighter stop loss (1.5%)
+        stop_profit(0.025),    # Wider profit target (2.5%)
+        time_based(15, 0)      # Earlier exit time (3:00 PM)
+    ]
+)
+```
+
+Then re-run: `python test_e2e.py`
+
+### Generating Custom Test Data
+
+Use `generate_test_data.py` to create different market scenarios:
+
+```python
+from generate_test_data import generate_multi_day_data, save_to_csv
+import random
+
+random.seed(123)  # Different random seed = different price patterns
+
+prices = generate_multi_day_data(
+    symbol='CUSTOM',
+    num_days=5,         # More trading days
+    start_price=100.0   # Different starting price
+)
+
+save_to_csv('CUSTOM', prices)
+```
+
+Then update your strategy config to use `symbol='CUSTOM'`.
+
+### What to Look For in Charts
+
+**Successful Trades:**
+- Entry and exit markers clearly visible
+- Positive P&L in title
+- Exit triggered by profit target (desired outcome)
+
+**Strategy Issues to Identify:**
+- Too many false signals (multiple entries without exits)
+- Stop loss triggers (indicates strategy needs refinement)
+- No signals generated (parameters may be too strict)
+- Late entries/exits missing optimal prices
+
+### Using E2E Tests for Development
+
+The E2E test serves multiple purposes:
+
+1. **Validation**: Ensures all components work together correctly
+2. **Demonstration**: Shows new users how the system operates
+3. **Regression Testing**: Verify changes don't break existing functionality
+4. **Strategy Development**: Quick iteration on strategy parameters
+5. **Documentation**: Provides concrete examples with real output
+
+Run `python test_e2e.py` after any code changes to ensure the system still works end-to-end.
+
 ## Limitations
 
 - **Live trading requires implementation**: `custom.py` contains stubs only
