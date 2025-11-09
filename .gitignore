@@ -141,3 +141,4 @@ cython_debug/
 /.vs/intraday/v16/TestStore/0/000.testlog
 /charts
 /data
+.venv

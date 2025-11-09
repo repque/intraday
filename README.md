@@ -45,15 +45,41 @@ This framework enables traders to:
 ## Installation
 
 ### Requirements
-- Python 3.x
-- pandas
-- plotly
-- six
+- Python 3.8 or higher
+- [uv](https://github.com/astral-sh/uv) (recommended) or pip
 
-### Setup
+### Setup with uv (Recommended)
+
+[uv](https://github.com/astral-sh/uv) is a fast Python package installer and resolver.
+
+```bash
+# Install uv if you haven't already
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Clone the repository
+git clone https://github.com/repque/intraday.git
+cd intraday
+
+# Create virtual environment and install dependencies
+uv sync --no-install-project
+
+# Activate the virtual environment
+source .venv/bin/activate  # On macOS/Linux
+# Or on Windows: .venv\Scripts\activate
+```
+
+### Alternative Setup with pip
+
 ```bash
 git clone https://github.com/repque/intraday.git
 cd intraday
+
+# Create virtual environment (recommended)
+python -m venv .venv
+source .venv/bin/activate  # On macOS/Linux
+# Or on Windows: .venv\Scripts\activate
+
+# Install dependencies
 pip install pandas plotly six
 ```
 
